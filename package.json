@@ -28,7 +28,7 @@
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js",
-    "install": "node ./out/scripts/install.js"
+    "install": "npm run compile && node ./out/scripts/install.js"
   },
   "devDependencies": {
     "@types/download": "^8.0.1",
