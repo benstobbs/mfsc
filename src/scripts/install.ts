@@ -1,15 +1,20 @@
-import { rename, renameSync } from "fs";
+import { mkdir, mkdirSync, rename, renameSync } from "fs";
 import { execFile } from "child_process";
 import download = require('download');
+import path = require("path");
 
+const toolsDirectory = "./tools/";
 const ossVersion = {
     y: "2022",
     m: "01",
     d: "26"
 };
+const ossDownloadUrl = `https://github.com/YosysHQ/oss-cad-suite-build/releases/download/${ossVersion.y}-${ossVersion.m}-${ossVersion.d}/oss-cad-suite-${ossUrlOS}-x64-${ossVersion.y}${ossVersion.m}${ossVersion.d}${archiveExtension}`;
+const litexSetupUrl = "https://raw.githubusercontent.com/enjoy-digital/litex/master/litex_setup.py";
+const isWindows = process.platform === "win32";
 
-async function main (){
-    const isWindows = process.platform === "win32";
+
+async function installOssCadSuite(){
     const archiveExtension = isWindows ? ".exe" : ".tgz";
     var ossUrlOS;
 
@@ -22,11 +27,9 @@ async function main (){
         }
     }
 
-    const ossDownloadUrl = `https://github.com/YosysHQ/oss-cad-suite-build/releases/download/${ossVersion.y}-${ossVersion.m}-${ossVersion.d}/oss-cad-suite-${ossUrlOS}-x64-${ossVersion.y}${ossVersion.m}${ossVersion.d}${archiveExtension}`;
-
     await download(
         ossDownloadUrl,
-        "./tools/",
+        toolsDirectory,
         {
             extract: !isWindows,
             filename: "tools" + archiveExtension
@@ -36,6 +39,20 @@ async function main (){
     if (isWindows){
         execFile('tools.exe', [], {cwd: "tools"});
     }
+}
+
+async function installLitex(){
+    mkdirSync(path.resolve(toolsDirectory, "litex"));
+
+    await download(
+        litexSetupUrl,
+        toolsDirectory
+    );
+}
+
+async function main(){
+    installOssCadSuite();
+    installLitex();
 }
 
 main();

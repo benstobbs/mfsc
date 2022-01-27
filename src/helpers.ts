@@ -9,5 +9,8 @@ export function toolBinariesPath(){
 }
 
 export function toolPath(tool: string){
+    if (tool === "python3" || tool === "pip3"){
+        return path.resolve(toolBinariesPath(), "py3bin", tool);
+    }
     return path.resolve(toolBinariesPath(), tool);
 }
