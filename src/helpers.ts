@@ -1,5 +1,6 @@
 import { execFileSync } from "child_process";
 import path = require("path");
+import { cwd } from "process";
 
 export function installDirectory(){
     return path.resolve(__dirname, '../');
@@ -9,7 +10,7 @@ export function ossCadSuitePath(){
     return path.resolve(installDirectory(), "tools/oss-cad-suite/");
 }
 
-export function execToolSync(tool: string, args: string[] = []){
+export function execToolSync(tool: string, args: string[] = [], cwd: string = "./"){
     const cadPath = ossCadSuitePath();
     const binPath = path.join(cadPath, "bin");
     const libPath = path.join(cadPath, "lib");
@@ -19,5 +20,14 @@ export function execToolSync(tool: string, args: string[] = []){
 
     const pathEnv = `${binPath}${pathSeparator}${libPath}${pathSeparator}${py3binPath}${pathSeparator}${process.env.PATH}`;
 
-    return execFileSync(tool, args, {"env": {"PATH": pathEnv}});
+    return execFileSync(
+        tool,
+        args,
+        {
+            env: {
+                "PATH": pathEnv
+            },
+            cwd: cwd
+        }    
+    );
 }

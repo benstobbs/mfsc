@@ -2,6 +2,7 @@ import { mkdirSync } from "fs";
 import { execFileSync } from "child_process";
 import download = require('download');
 import path = require("path");
+import { execToolSync } from "../helpers";
 
 const toolsDirectory = "./tools/";
 const ossVersion = {
@@ -43,16 +44,25 @@ async function installOssCadSuite(){
 }
 
 async function installLitex(){
-    mkdirSync(path.resolve(toolsDirectory, "litex"));
+    const litexDirectory = path.resolve(toolsDirectory, "litex");
+
+    try{
+        mkdirSync(litexDirectory);
+    } catch (Error) {}
 
     await download(
         litexSetupUrl,
-        toolsDirectory
+        litexDirectory,
+        {
+            filename: "litex_setup.py"
+        }
     );
+
+    execToolSync("python3", ["litex_setup.py", "--init", "--install"], litexDirectory);
 }
 
 async function main(){
-    await installOssCadSuite();
+    // await installOssCadSuite();
     await installLitex();
 }
 
