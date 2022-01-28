@@ -62,7 +62,7 @@ async function installLitex(){
 }
 
 async function main(){
-    // await installOssCadSuite();
+    await installOssCadSuite();
     await installLitex();
 }
 
