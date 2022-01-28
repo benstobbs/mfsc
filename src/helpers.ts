@@ -14,7 +14,12 @@ export function execToolSync(tool: string, args: string[] = []){
     const binPath = path.join(cadPath, "bin");
     const libPath = path.join(cadPath, "lib");
     const py3binPath = path.join(cadPath, "py3bin");
-    const pathEnv = `${binPath};${libPath};${py3binPath};%PATH%`;
 
+    const pathSeparator = process.platform === "win32" ? ";" : ":";
+    const systemPath = process.platform === "win32" ? "%PATH%" : "$PATH";
+
+    const pathEnv = `${binPath}${pathSeparator}${libPath}${pathSeparator}${py3binPath}${pathSeparator}${systemPath}`;
+    
+    console.log(`Finding tool ${tool} with PATH = ${pathEnv}`);
     return execFileSync(tool, args, {"env": {"PATH": pathEnv}});
 }
