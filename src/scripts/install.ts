@@ -9,7 +9,6 @@ const ossVersion = {
     m: "01",
     d: "26"
 };
-const ossDownloadUrl = `https://github.com/YosysHQ/oss-cad-suite-build/releases/download/${ossVersion.y}-${ossVersion.m}-${ossVersion.d}/oss-cad-suite-${ossUrlOS}-x64-${ossVersion.y}${ossVersion.m}${ossVersion.d}${archiveExtension}`;
 const litexSetupUrl = "https://raw.githubusercontent.com/enjoy-digital/litex/master/litex_setup.py";
 const isWindows = process.platform === "win32";
 
@@ -26,6 +25,8 @@ async function installOssCadSuite(){
             throw new Error('Unsupported operating system.');
         }
     }
+
+    const ossDownloadUrl = `https://github.com/YosysHQ/oss-cad-suite-build/releases/download/${ossVersion.y}-${ossVersion.m}-${ossVersion.d}/oss-cad-suite-${ossUrlOS}-x64-${ossVersion.y}${ossVersion.m}${ossVersion.d}${archiveExtension}`;
 
     await download(
         ossDownloadUrl,
