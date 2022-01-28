@@ -20,6 +20,15 @@ export function execToolSync(tool: string, args: string[] = [], cwd: string = ".
 
     const pathEnv = `${binPath}${pathSeparator}${libPath}${pathSeparator}${py3binPath}${pathSeparator}${process.env.PATH}`;
 
+    if (process.platform !== "win32"){
+        if (tool === "python3"){
+            tool = "tabbypy3";
+        }
+        else if (tool === "pip" || tool === "pip3"){
+            tool = "tabbypip";
+        }
+    }
+
     return execFileSync(
         tool,
         args,
