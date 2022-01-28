@@ -39,7 +39,7 @@ export function execToolSync(tool: string, args: string[] = [], cwd: string = ".
         {
             env: {
                 "PATH": pathEnv,
-                "PYTHONEXECUTABLE": isWindows ? path.join(cadPath, "p3bin", "python3") : path.join(binPath, "tabbypy3"),
+                "PYTHONEXECUTABLE": isWindows ? path.join(cadPath, "py3bin", "python3") : path.join(binPath, "tabbypy3"),
                 "PYTHONHOME": cadPath,
                 "PYTHONNOUSERSITE": "1",
                 "SSL_CERT_FILE": path.join(cadPath, "etc", "cacert.pem"),
