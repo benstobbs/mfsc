@@ -29,6 +29,8 @@ export function execToolSync(tool: string, args: string[] = [], cwd: string = ".
         }
     }
 
+    console.log(`Executing tool ${tool} with args ${args} and PATH = ${pathEnv}`);
+
     return execFileSync(
         tool,
         args,
