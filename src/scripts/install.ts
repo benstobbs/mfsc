@@ -44,7 +44,9 @@ async function installOssCadSuite(){
 }
 
 async function installLitex(){
-    execToolSync("gdk-pixbuf-query-loaders.exe", ["--update-cache"]);
+    if (isWindows){
+        execToolSync("gdk-pixbuf-query-loaders.exe", ["--update-cache"]);
+    }
 
     const litexDirectory = path.resolve(toolsDirectory, "litex");
 
