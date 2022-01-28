@@ -1,5 +1,5 @@
-import { mkdir, mkdirSync, rename, renameSync } from "fs";
-import { execFile } from "child_process";
+import { mkdirSync } from "fs";
+import { execFileSync } from "child_process";
 import download = require('download');
 import path = require("path");
 
@@ -38,7 +38,7 @@ async function installOssCadSuite(){
     );
 
     if (isWindows){
-        execFile('tools.exe', [], {cwd: "tools"});
+        execFileSync('tools.exe', [], {cwd: "tools"});
     }
 }
 
@@ -52,8 +52,8 @@ async function installLitex(){
 }
 
 async function main(){
-    installOssCadSuite();
-    installLitex();
+    await installOssCadSuite();
+    await installLitex();
 }
 
 main();
