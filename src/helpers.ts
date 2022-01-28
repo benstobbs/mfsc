@@ -19,6 +19,5 @@ export function execToolSync(tool: string, args: string[] = []){
 
     const pathEnv = `${binPath}${pathSeparator}${libPath}${pathSeparator}${py3binPath}${pathSeparator}${process.env.PATH}`;
 
-    console.log(`Finding tool ${tool} with PATH = ${pathEnv}`);
     return execFileSync(tool, args, {"env": {"PATH": pathEnv}});
 }
