@@ -40,14 +40,12 @@ async function installOssCadSuite(){
 
     if (isWindows){
         execFileSync('tools.exe', [], {cwd: "tools"});
+        execToolSync("gdk-pixbuf-query-loaders.exe", ["--update-cache"]);
+
     }
 }
 
 async function installLitex(){
-    if (isWindows){
-        execToolSync("gdk-pixbuf-query-loaders.exe", ["--update-cache"]);
-    }
-
     const litexDirectory = path.resolve(toolsDirectory, "litex");
 
     try{
