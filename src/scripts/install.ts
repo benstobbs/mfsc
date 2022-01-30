@@ -66,6 +66,8 @@ async function installLitex(){
 }
 
 async function main(){
+    execToolSync("python3", ["-m", "ssl"]); //TEST
+
     await installOssCadSuite();
     await installLitex();
 }
