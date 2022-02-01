@@ -15,6 +15,7 @@ const isWindows = process.platform === "win32";
 
 
 async function installOssCadSuite(){
+
     const archiveExtension = isWindows ? ".exe" : ".tgz";
     var ossUrlOS;
 
@@ -34,6 +35,7 @@ async function installOssCadSuite(){
     await download(
         ossDownloadUrl,
         toolsDirectory,
+
         {
             extract: !isWindows,
             filename: "tools" + archiveExtension
@@ -86,5 +88,6 @@ async function main(){
 
     console.log("Done installing!");
 }
+
 
 main();

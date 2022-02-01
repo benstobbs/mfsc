@@ -2,6 +2,7 @@ import { execFileSync } from "child_process";
 import path = require("path");
 import { cwd } from "process";
 
+
 export function installDirectory(){
     return path.resolve(__dirname, '../');
 }
