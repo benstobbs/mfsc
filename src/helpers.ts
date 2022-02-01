@@ -22,16 +22,14 @@ export function execToolSync(tool: string, args: string[] = [], cwd: string = ".
 
     const pathEnv = `${binPath}${pathSeparator}${libPath}${pathSeparator}${py3binPath}${pathSeparator}${process.env.PATH}`;
 
-    // if (!isWindows){
-    //     if (tool === "python3"){
-    //         tool = "tabbypy3";
-    //     }
-    //     else if (tool === "pip" || tool === "pip3"){
-    //         tool = "tabbypip";
-    //     }
-    // }
-
-    console.log(`Executing tool ${tool} with args ${args} and PATH = ${pathEnv}`);
+    if (!isWindows){
+        if (tool === "python3"){
+            tool = "tabbypy3";
+        }
+        else if (tool === "pip" || tool === "pip3"){
+            tool = "tabbypip";
+        }
+    }
 
     return execFileSync(
         tool,
