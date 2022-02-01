@@ -38,10 +38,11 @@ export function execToolSync(tool: string, args: string[] = [], cwd: string = ".
         args,
         {
             env: {
+                /* eslint-disable @typescript-eslint/naming-convention */
                 "PATH": pathEnv,
                 "PYTHONEXECUTABLE": isWindows ? path.join(cadPath, "py3bin", "python3") : path.join(binPath, "tabbypy3"),
-                // "PYTHONHOME": cadPath,
-                // "PYTHONNOUSERSITE": "1",
+                "PYTHONHOME": cadPath,
+                "PYTHONNOUSERSITE": "1",
                 "SSL_CERT_FILE": path.join(cadPath, "etc", "cacert.pem"),
                 "QT_PLUGIN_PATH": path.join(libPath, "qt5", "plugins"),
                 "QT_LOGGING_RULES": "*=false",
@@ -49,6 +50,7 @@ export function execToolSync(tool: string, args: string[] = [], cwd: string = ".
                 "GTK_DATA_PREFIX": cadPath,
                 "GDK_PIXBUF_MODULEDIR": path.join(libPath, "gdk-pixbuf-2.0", "2.10.0", "loaders"),
                 "GDK_PIXBUF_MODULE_FILE": path.join(libPath, "gdk-pixbuf-2.0", "2.10.0", "loaders.cache")
+                /* eslint-enable @typescript-eslint/naming-convention */
             },
             cwd: cwd
         }    
