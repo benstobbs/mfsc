@@ -1,4 +1,4 @@
-import { mkdirSync } from "fs";
+import { copyFileSync, mkdirSync } from "fs";
 import { execFileSync } from "child_process";
 import download = require('download');
 import path = require("path");
@@ -8,7 +8,7 @@ const toolsDirectory = "./tools/";
 const ossVersion = {
     y: "2022",
     m: "01",
-    d: "26"
+    d: "30"
 };
 const litexSetupUrl = "https://raw.githubusercontent.com/enjoy-digital/litex/master/litex_setup.py";
 const isWindows = process.platform === "win32";
@@ -42,6 +42,15 @@ async function installOssCadSuite(){
         execFileSync('tools.exe', [], {cwd: "tools"});
         execToolSync("gdk-pixbuf-query-loaders.exe", ["--update-cache"]);
 
+        // Python SSL Patch
+        copyFileSync(
+            path.join(toolsDirectory, "oss-cad-suite", "lib", "libcrypto-1_1-x64.dll"),
+            path.join(toolsDirectory, "oss-cad-suite", "lib", "python3.8", "lib-dynload", "libcrypto-1_1-x64.dll")
+        );
+        copyFileSync(
+            path.join(toolsDirectory, "oss-cad-suite", "lib", "libssl-1_1-x64.dll"),
+            path.join(toolsDirectory, "oss-cad-suite", "lib", "python3.8", "lib-dynload", "libssl-1_1-x64.dll")
+        );
     }
 }
 
