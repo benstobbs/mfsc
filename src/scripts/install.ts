@@ -29,6 +29,8 @@ async function installOssCadSuite(){
 
     const ossDownloadUrl = `https://github.com/YosysHQ/oss-cad-suite-build/releases/download/${ossVersion.y}-${ossVersion.m}-${ossVersion.d}/oss-cad-suite-${ossUrlOS}-x64-${ossVersion.y}${ossVersion.m}${ossVersion.d}${archiveExtension}`;
 
+    console.log("Downloading OSS CAD Suite");
+
     await download(
         ossDownloadUrl,
         toolsDirectory,
@@ -39,6 +41,8 @@ async function installOssCadSuite(){
     );
 
     if (isWindows){
+        console.log("Extracting OSS CAD Suite");
+
         execFileSync('tools.exe', [], {cwd: "tools"});
         execToolSync("gdk-pixbuf-query-loaders.exe", ["--update-cache"]);
 
@@ -61,6 +65,8 @@ async function installLitex(){
         mkdirSync(litexDirectory);
     } catch (Error) {}
 
+    console.log("Downloading litex_setup.py");
+
     await download(
         litexSetupUrl,
         litexDirectory,
@@ -69,13 +75,16 @@ async function installLitex(){
         }
     );
 
+    console.log("Installing litex");
+
     execToolSync("python3", ["litex_setup.py", "--init", "--install"], litexDirectory);
 }
 
 async function main(){
     await installOssCadSuite();
-    execToolSync("python3", ["-m", "ssl"]); //TEST
     await installLitex();
+
+    console.log("Done installing!");
 }
 
 main();
