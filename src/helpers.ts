@@ -8,7 +8,11 @@ export function installDirectory(){
 }
 
 export function ossCadSuitePath(){
-    return path.resolve(installDirectory(), "tools/oss-cad-suite/");
+    return path.join(installDirectory(), "tools", "oss-cad-suite");
+}
+
+export function litexPath(){
+    return path.join(installDirectory(), "tools", "litex");
 }
 
 export function execToolSync(tool: string, args: string[] = [], cwd: string = "./"){

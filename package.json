@@ -10,14 +10,14 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:mfsc.helloWorld"
+    "onCommand:mfsc.compileSoC"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "mfsc.helloWorld",
-        "title": "Hello World"
+        "command": "mfsc.compileSoC",
+        "title": "MFSC: Compile SoC"
       }
     ]
   },
