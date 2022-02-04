@@ -96,7 +96,7 @@ async function installRiscvCompiler(){
 
 async function installLitex(){
     // python dependencies
-    execToolSync("pip3", ["install", "ninja", "meson"]);
+    execToolSync("pip3", ["install", "meson"]);
 
     const litexDirectory = path.resolve(toolsDirectory, "litex");
 

@@ -1,4 +1,6 @@
 import { execFileSync } from "child_process";
+import { readdirSync } from "fs";
+import { join } from "path";
 import path = require("path");
 
 
@@ -41,6 +43,13 @@ export function execToolSync(tool: string, args: string[] = [], cwd: string = ".
         }
     }
 
+    const pythonPath = readdirSync(litexPath(), { withFileTypes: true })
+        .filter(dirent => dirent.isDirectory())
+        .map(dirent => dirent.name)
+        .map(name => path.join(litexPath(), name))
+        .join(pathSeparator);
+
+
     return execFileSync(
         tool,
         args,
@@ -51,6 +60,7 @@ export function execToolSync(tool: string, args: string[] = [], cwd: string = ".
                 "PATHEXT" : isWindows ? ".EXE" : "",
                 "PYTHONEXECUTABLE": isWindows ? path.join(cadPath, "py3bin", "python3") : path.join(binPath, "tabbypy3"),
                 "PYTHONHOME": cadPath,
+                "PYTHONPATH": pythonPath,
                 "PYTHONNOUSERSITE": "1",
                 "SSL_CERT_FILE": path.join(cadPath, "etc", "cacert.pem"),
                 "QT_PLUGIN_PATH": path.join(libPath, "qt5", "plugins"),
