@@ -1,4 +1,4 @@
-import { copyFileSync, mkdirSync } from "fs";
+import { copyFileSync, mkdirSync, renameSync, rmSync } from "fs";
 import { execFileSync } from "child_process";
 import download = require('download');
 import path = require("path");
@@ -10,6 +10,7 @@ const ossVersion = {
     m: "01",
     d: "30"
 };
+const riscvCompilerVersion = "10.2.0-1.2";
 const litexSetupUrl = "https://raw.githubusercontent.com/enjoy-digital/litex/master/litex_setup.py";
 const isWindows = process.platform === "win32";
 
@@ -46,6 +47,8 @@ async function installOssCadSuite(){
         console.log("Extracting OSS CAD Suite");
 
         execFileSync('tools.exe', [], {cwd: "tools"});
+        rmSync(path.join(toolsDirectory, "tools.exe"));
+
         execToolSync("gdk-pixbuf-query-loaders.exe", ["--update-cache"]);
 
         // Python SSL Patch
@@ -60,7 +63,41 @@ async function installOssCadSuite(){
     }
 }
 
+async function installRiscvCompiler(){
+    var riscvUrlOs;
+
+    switch(process.platform){
+        case "win32": {riscvUrlOs = "win32"; break;}
+        case "darwin": {riscvUrlOs = "darwin"; break;}
+        case "linux": {riscvUrlOs = "linux"; break;}
+        default: {
+            throw new Error('Unsupported operating system.');
+        }
+    }
+
+    const riscvDownloadUrl = `https://github.com/xpack-dev-tools/riscv-none-embed-gcc-xpack/releases/download/v${riscvCompilerVersion}/xpack-riscv-none-embed-gcc-${riscvCompilerVersion}-${riscvUrlOs}-x64.zip`;
+
+    console.log("Downloading RISC-V Compiler");
+
+    await download(
+        riscvDownloadUrl,
+        toolsDirectory,
+
+        {
+            extract: true,
+        }
+    );
+
+    renameSync(
+        path.join(toolsDirectory, `xpack-riscv-none-embed-gcc-${riscvCompilerVersion}`),
+        path.join(toolsDirectory, "riscv-none-embed-gcc")
+    );
+}
+
 async function installLitex(){
+    // python dependencies
+    execToolSync("pip3", ["install", "ninja", "meson"]);
+
     const litexDirectory = path.resolve(toolsDirectory, "litex");
 
     try{
@@ -84,6 +121,7 @@ async function installLitex(){
 
 async function main(){
     await installOssCadSuite();
+    await installRiscvCompiler();
     await installLitex();
 
     console.log("Done installing!");

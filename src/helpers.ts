@@ -19,7 +19,7 @@ export function execToolSync(tool: string, args: string[] = [], cwd: string = ".
     const binPath = path.join(cadPath, "bin");
     const libPath = path.join(cadPath, "lib");
     const py3binPath = path.join(cadPath, "py3bin");
-    const riscvBinPath = path.join(installDirectory(), "tools", "riscv-none-embed", "bin");
+    const riscvBinPath = path.join(installDirectory(), "tools", "riscv-none-embed-gcc", "bin");
 
     const isWindows = process.platform === "win32";
 
