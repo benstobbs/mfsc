@@ -16,7 +16,6 @@ const isWindows = process.platform === "win32";
 
 
 async function installOssCadSuite(){
-
     const archiveExtension = isWindows ? ".exe" : ".tgz";
     var ossUrlOS;
 
@@ -64,6 +63,7 @@ async function installOssCadSuite(){
 }
 
 async function installRiscvCompiler(){
+    const archiveExtension = isWindows ? ".zip" : ".tar.gz";
     var riscvUrlOs;
 
     switch(process.platform){
@@ -75,7 +75,7 @@ async function installRiscvCompiler(){
         }
     }
 
-    const riscvDownloadUrl = `https://github.com/xpack-dev-tools/riscv-none-embed-gcc-xpack/releases/download/v${riscvCompilerVersion}/xpack-riscv-none-embed-gcc-${riscvCompilerVersion}-${riscvUrlOs}-x64.zip`;
+    const riscvDownloadUrl = `https://github.com/xpack-dev-tools/riscv-none-embed-gcc-xpack/releases/download/v${riscvCompilerVersion}/xpack-riscv-none-embed-gcc-${riscvCompilerVersion}-${riscvUrlOs}-x64${archiveExtension}`;
 
     console.log("Downloading RISC-V Compiler");
 
