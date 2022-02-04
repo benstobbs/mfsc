@@ -1,5 +1,5 @@
 import { execFileSync } from "child_process";
-import { readdirSync } from "fs";
+import { existsSync, readdirSync } from "fs";
 import { join } from "path";
 import path = require("path");
 
@@ -43,12 +43,15 @@ export function execToolSync(tool: string, args: string[] = [], cwd: string = ".
         }
     }
 
-    const pythonPath = readdirSync(litexPath(), { withFileTypes: true })
-        .filter(dirent => dirent.isDirectory())
-        .map(dirent => dirent.name)
-        .map(name => path.join(litexPath(), name))
-        .join(pathSeparator);
+    var pythonPath = "";
 
+    if (existsSync(litexPath())){
+        pythonPath += readdirSync(litexPath(), { withFileTypes: true })
+            .filter(dirent => dirent.isDirectory())
+            .map(dirent => dirent.name)
+            .map(name => path.join(litexPath(), name))
+            .join(pathSeparator);
+    }
 
     return execFileSync(
         tool,
