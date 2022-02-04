@@ -1,6 +1,5 @@
 import { execFileSync } from "child_process";
 import path = require("path");
-import { cwd } from "process";
 
 
 export function installDirectory(){
@@ -20,12 +19,18 @@ export function execToolSync(tool: string, args: string[] = [], cwd: string = ".
     const binPath = path.join(cadPath, "bin");
     const libPath = path.join(cadPath, "lib");
     const py3binPath = path.join(cadPath, "py3bin");
+    const riscvBinPath = path.join(installDirectory(), "tools", "riscv-none-embed", "bin");
 
     const isWindows = process.platform === "win32";
 
     const pathSeparator = isWindows ? ";" : ":";
 
-    const pathEnv = `${binPath}${pathSeparator}${libPath}${pathSeparator}${py3binPath}${pathSeparator}${process.env.PATH}`;
+    const pathEnv =
+        binPath + pathSeparator +
+        libPath + pathSeparator +
+        py3binPath + pathSeparator +
+        riscvBinPath + pathSeparator +
+        process.env.PATH;
 
     if (!isWindows){
         if (tool === "python3"){
@@ -43,6 +48,7 @@ export function execToolSync(tool: string, args: string[] = [], cwd: string = ".
             env: {
                 /* eslint-disable @typescript-eslint/naming-convention */
                 "PATH": pathEnv,
+                "PATHEXT" : isWindows ? ".EXE" : "",
                 "PYTHONEXECUTABLE": isWindows ? path.join(cadPath, "py3bin", "python3") : path.join(binPath, "tabbypy3"),
                 "PYTHONHOME": cadPath,
                 "PYTHONNOUSERSITE": "1",
