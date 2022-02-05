@@ -1,26 +1,39 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
+import { execSync } from 'child_process';
+import { existsSync, mkdirSync } from 'fs';
+import path = require('path');
 import * as vscode from 'vscode';
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
+const fs = vscode.workspace.fs;
+
 export function activate(context: vscode.ExtensionContext) {
 	
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "mfsc" is now active!');
+	let disposable = vscode.commands.registerCommand('mfsc.compileSoC', () => {
+		const workspaceFolders = vscode.workspace.workspaceFolders;
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('mfsc.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from MFSC!');
+		if (workspaceFolders){
+			const workspacePath = workspaceFolders[0].uri.path;
+			var buildFolder = path.join(workspacePath, "build");
+
+			// /c:/... --> c:/...
+			if (process.platform === "win32" && buildFolder[0] === "\\"){
+				buildFolder = buildFolder.slice(1);
+			}
+
+			if (!existsSync(buildFolder)){
+				mkdirSync(buildFolder);
+			}
+
+			const command = `docker run --rm -v ${buildFolder}:/project benstobbs/litex-runner python3 /litex/litex-boards/litex_boards/targets/gsd_orangecrab.py --build --output-dir /project/`;
+			execSync(command);
+			
+			vscode.window.showInformationMessage("Done!");
+		}
+		else{
+			vscode.window.showErrorMessage("No workspace folder open.");
+		}
 	});
 
 	context.subscriptions.push(disposable);
 }
 
-// this method is called when your extension is deactivated
 export function deactivate() {}
