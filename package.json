@@ -10,14 +10,14 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:mfsc.helloWorld"
+    "onCommand:mfsc.compileSoC"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "mfsc.helloWorld",
-        "title": "Hello World"
+        "command": "mfsc.compileSoC",
+        "title": "MFSC: Compile SoC"
       }
     ]
   },
@@ -27,8 +27,7 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js",
-    "install": "npm run compile && node ./out/scripts/install.js"
+    "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
     "@types/download": "^8.0.1",
