@@ -1,14 +1,12 @@
-import { execFileSync, execSync } from 'child_process';
+import { execFile, execFileSync, execSync } from 'child_process';
 import { existsSync, mkdirSync } from 'fs';
 import path = require('path');
-import * as vscode from 'vscode';
+import { commands, ExtensionContext, ProgressLocation, window, workspace } from 'vscode';
 
-const fs = vscode.workspace.fs;
-
-export function activate(context: vscode.ExtensionContext) {
+export function activate(context: ExtensionContext) {
 	
-	let disposable = vscode.commands.registerCommand('mfsc.compileSoC', () => {
-		const workspaceFolders = vscode.workspace.workspaceFolders;
+	let disposable = commands.registerCommand('mfsc.compileSoC', () => {
+		const workspaceFolders = workspace.workspaceFolders;
 
 		if (workspaceFolders){
 			const workspacePath = workspaceFolders[0].uri.path;
@@ -35,12 +33,25 @@ export function activate(context: vscode.ExtensionContext) {
 				"--output-dir",
 				"/project/"
 			];
-			execFileSync("docker", args, {maxBuffer: 100 * 1024 * 1024});
-			
-			vscode.window.showInformationMessage("Done!");
+
+			window.withProgress({
+				location: ProgressLocation.Notification,
+				title: "Building SoC",
+				cancellable: false
+			}, () => {	
+				const p = new Promise<void>(async resolve => {
+					execFile("docker", args, {maxBuffer: 100 * 1024 * 1024}, (stdout) => {
+						console.log(stdout);
+						resolve();
+					});
+				});
+				return p;
+			}).then(() => {
+				window.showInformationMessage("Built SoC!");
+			});
 		}
 		else{
-			vscode.window.showErrorMessage("No workspace folder open.");
+			window.showErrorMessage("No workspace folder open.");
 		}
 	});
 
