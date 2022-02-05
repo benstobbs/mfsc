@@ -23,8 +23,8 @@ jobs:
       uses: docker-practice/actions-setup-docker@master
       if: runner.os == 'macOS'
 
-    - name: Switch to Linux Docker Images (for Windows)
-      run: "%programfiles%\docker\docker\dockercli" -SwitchDaemon
+    - run: "%programfiles%\docker\docker\dockercli" -SwitchDaemon
+      if: runner.os == 'Windows'
 
     - run: npm install
 
