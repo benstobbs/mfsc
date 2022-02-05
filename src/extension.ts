@@ -20,6 +20,9 @@ export function activate(context: ExtensionContext) {
 			if (!existsSync(buildFolder)){
 				mkdirSync(buildFolder);
 			}
+			
+			// ensure container clock is synchrononised with host
+			execFileSync("docker", ["run", "--rm", "--privileged", "benstobbs/litex-runner", "hwclock", "-s"]);
 
 			const args = [
 				"run",
