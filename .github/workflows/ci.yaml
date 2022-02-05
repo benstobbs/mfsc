@@ -8,7 +8,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest]
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout
@@ -18,10 +18,6 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: '16'
-
-    - name: Setup Docker (for MacOS)
-      uses: docker-practice/actions-setup-docker@master
-      if: runner.os == 'macOS'
 
     - run: npm install
 
