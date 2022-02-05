@@ -8,7 +8,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [macos-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout
@@ -22,11 +22,6 @@ jobs:
     - name: Setup Docker (for MacOS)
       uses: docker-practice/actions-setup-docker@master
       if: runner.os == 'macOS'
-
-    - name: Switch Windows Docker Daemon to Linux Images
-      run: |
-        & "C:\Program Files\docker\docker\dockercli.exe" -SwitchDaemon
-      if: runner.os == 'Windows'
 
     - run: npm install
 
