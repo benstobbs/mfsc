@@ -37,7 +37,7 @@ export function activate(context: ExtensionContext) {
 				"/project/"
 			];
 
-			window.withProgress({
+			return window.withProgress({
 				location: ProgressLocation.Notification,
 				title: "Building SoC",
 				cancellable: false
@@ -54,7 +54,7 @@ export function activate(context: ExtensionContext) {
 			});
 		}
 		else{
-			window.showErrorMessage("No workspace folder open.");
+			return window.showErrorMessage("No workspace folder open.");
 		}
 	});
 
