@@ -24,7 +24,7 @@ jobs:
       if: runner.os == 'macOS'
 
     - name: Switch Windows Docker Daemon to Linux Images
-    - run: |
+      run: |
         %programfiles%\docker\docker\dockercli.exe -SwitchDaemon
       if: runner.os == 'Windows'
 
