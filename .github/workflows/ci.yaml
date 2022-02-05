@@ -23,6 +23,7 @@ jobs:
       uses: docker-practice/actions-setup-docker@master
       if: runner.os == 'macOS'
 
+    - name: Switch Windows Docker Daemon to Linux Images
     - run: |
         "%programfiles%\docker\docker\dockercli" -SwitchDaemon
       if: runner.os == 'Windows'
