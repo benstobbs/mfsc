@@ -2,7 +2,7 @@ import { execFile, execFileSync, ExecFileException } from 'child_process';
 import { existsSync } from 'fs';
 import path = require('path');
 import { commands, ExtensionContext, ProgressLocation, window } from 'vscode';
-import { getBuildFolder } from './helpers';
+import { getBuildFolder, getWorkspaceFolder } from './helpers';
 
 export function activate(context: ExtensionContext) {
 	context.subscriptions.push(commands.registerCommand('mfsc.compileSoC', compileSoC));
@@ -12,6 +12,7 @@ export function activate(context: ExtensionContext) {
 export function deactivate() {}
 
 function compileSoC() {
+	const workspaceFolder = getWorkspaceFolder();
 	const buildFolder = getBuildFolder();
 
 	if (buildFolder){		
@@ -22,14 +23,14 @@ function compileSoC() {
 			"run",
 			"--rm",
 			"-v",
-			`${buildFolder}:/project`,
+			`${workspaceFolder}:/project`,
 			"benstobbs/litex-runner",
 			"python3",
 			"/litex/litex-boards/litex_boards/targets/gsd_orangecrab.py",
 			"--device", "85F",
 			"--build",
 			"--output-dir",
-			"/project/"
+			"/project/build/"
 		];
 
 		return window.withProgress({
