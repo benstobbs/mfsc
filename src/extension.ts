@@ -38,14 +38,17 @@ function compileSoC() {
 			cancellable: false
 		}, () => {	
 			const p = new Promise<void>(resolve => {
-				execFile("docker", args, {maxBuffer: 100 * 1024 * 1024}, (stdout) => {
-					console.log(stdout);
+				execFile("docker", args, {maxBuffer: 100 * 1024 * 1024}, (error: ExecFileException | null) => {
+					if (error){
+						window.showErrorMessage(error.message);
+					}
+					else{
+						window.showInformationMessage("Built SoC!");
+					}
 					resolve();
 				});
 			});
 			return p;
-		}).then(() => {
-			window.showInformationMessage("Built SoC!");
 		});
 	}
 	else{
