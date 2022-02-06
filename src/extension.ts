@@ -1,4 +1,5 @@
 import { execFile, execFileSync, ExecFileException } from 'child_process';
+import { existsSync } from 'fs';
 import path = require('path');
 import { commands, ExtensionContext, ProgressLocation, window } from 'vscode';
 import { getBuildFolder } from './helpers';
@@ -60,6 +61,10 @@ function uploadSoC(){
 	}
 
 	const bitstreamPath = path.join(buildFolder, "gateware", "gsd_orangecrab.bit");
+
+	if (!existsSync(bitstreamPath)){
+		return window.showErrorMessage("No bitstream file found: You must compile the SoC first!")
+	}
 
 	const dfuArgs = [
 		"-d", "1209:5af0",
