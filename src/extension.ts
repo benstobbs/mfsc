@@ -3,13 +3,33 @@ import { existsSync } from 'fs';
 import path = require('path');
 import { commands, ExtensionContext, ProgressLocation, window } from 'vscode';
 import { getBuildFolder, getWorkspaceFolder } from './helpers';
+var copy = require('recursive-copy');
+
+var extensionPath: string;
 
 export function activate(context: ExtensionContext) {
+	extensionPath = context.extensionPath;
+
 	context.subscriptions.push(commands.registerCommand('mfsc.compileSoC', compileSoC));
 	context.subscriptions.push(commands.registerCommand('mfsc.uploadSoC', uploadSoC));
+	context.subscriptions.push(commands.registerCommand('mfsc.createProject', createProject));
 }
 
 export function deactivate() {}
+
+function createProject(){
+	const templateFolder = path.join(extensionPath, "assets/template_project/");
+	const workspaceFolder = getWorkspaceFolder();
+	
+	if (!workspaceFolder){
+		window.showErrorMessage("Please open an empty project folder.");
+		return;
+	}
+
+	copy(templateFolder, workspaceFolder).catch((error: string) => {
+		window.showErrorMessage("Failed to create project: " + error);
+	});
+}
 
 function compileSoC() {
 	const workspaceFolder = getWorkspaceFolder();
