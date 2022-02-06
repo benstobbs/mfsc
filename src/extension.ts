@@ -1,30 +1,18 @@
 import { execFile, execFileSync } from 'child_process';
-import { existsSync, mkdirSync } from 'fs';
-import path = require('path');
-import { commands, ExtensionContext, ProgressLocation, window, workspace } from 'vscode';
+import { commands, ExtensionContext, ProgressLocation, window } from 'vscode';
+import { getBuildFolder } from './helpers';
 
 export function activate(context: ExtensionContext) {
-	context.subscriptions.push(commands.registerCommand('mfsc.compileSoC', compileSoC));	
+	context.subscriptions.push(commands.registerCommand('mfsc.compileSoC', compileSoC));
+	context.subscriptions.push(commands.registerCommand('mfsc.uploadSoC', uploadSoC));
 }
 
 export function deactivate() {}
 
 function compileSoC() {
-	const workspaceFolders = workspace.workspaceFolders;
+	const buildFolder = getBuildFolder();
 
-	if (workspaceFolders){
-		const workspacePath = workspaceFolders[0].uri.path;
-		var buildFolder = path.join(workspacePath, "build");
-
-		// \c:\... --> c:\...
-		if (process.platform === "win32" && buildFolder[0] === "\\"){
-			buildFolder = buildFolder.slice(1);
-		}
-
-		if (!existsSync(buildFolder)){
-			mkdirSync(buildFolder);
-		}
-		
+	if (buildFolder){		
 		// ensure container clock is synchrononised with host
 		execFileSync("docker", ["run", "--rm", "--privileged", "benstobbs/litex-runner", "hwclock", "-s"]);
 
@@ -61,4 +49,17 @@ function compileSoC() {
 	else{
 		return window.showErrorMessage("No workspace folder open.");
 	}
+}
+
+function uploadSoC(){
+	const dfuArgs = [
+		"-d", "1209:5af0",
+		"-a", "0",
+		// "-D", "C:\Users\ben\OneDrive\Desktop\eggsample\build\gateware\gsd_orangecrab.bit"
+	];
+
+	const x = execFileSync("dfu-util", dfuArgs);
+	const s = x.toString();
+	console.log(s);
+	window.showInformationMessage(s);
 }
