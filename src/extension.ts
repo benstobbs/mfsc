@@ -1,4 +1,5 @@
-import { execFile, execFileSync } from 'child_process';
+import { execFile, execFileSync, ExecFileException } from 'child_process';
+import path = require('path');
 import { commands, ExtensionContext, ProgressLocation, window } from 'vscode';
 import { getBuildFolder } from './helpers';
 
@@ -52,14 +53,36 @@ function compileSoC() {
 }
 
 function uploadSoC(){
+	const buildFolder = getBuildFolder();
+
+	if (!buildFolder){
+		return window.showErrorMessage("No workspace folder open.");
+	}
+
+	const bitstreamPath = path.join(buildFolder, "gateware", "gsd_orangecrab.bit");
+
 	const dfuArgs = [
 		"-d", "1209:5af0",
 		"-a", "0",
-		// "-D", "C:\Users\ben\OneDrive\Desktop\eggsample\build\gateware\gsd_orangecrab.bit"
+		"-D", bitstreamPath
 	];
 
-	const x = execFileSync("dfu-util", dfuArgs);
-	const s = x.toString();
-	console.log(s);
-	window.showInformationMessage(s);
+	return window.withProgress({
+		location: ProgressLocation.Notification,
+		title: "Uploading Bitstream",
+		cancellable: false
+	}, () => {	
+		const p = new Promise<void>(resolve => {
+			execFile("dfu-util", dfuArgs, {}, (error: ExecFileException | null) => {
+				if (error){
+					window.showErrorMessage(error.message);
+				}
+				else{
+					window.showInformationMessage("Succesfully uploaded bitstream!");
+				}
+				resolve();
+			});
+		});
+		return p;
+	});
 }
