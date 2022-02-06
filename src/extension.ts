@@ -1,4 +1,4 @@
-import { execFile, execFileSync, execSync } from 'child_process';
+import { execFile, execFileSync } from 'child_process';
 import { existsSync, mkdirSync } from 'fs';
 import path = require('path');
 import { commands, ExtensionContext, ProgressLocation, window, workspace } from 'vscode';
@@ -47,7 +47,7 @@ function compileSoC() {
 			title: "Building SoC",
 			cancellable: false
 		}, () => {	
-			const p = new Promise<void>(async resolve => {
+			const p = new Promise<void>(resolve => {
 				execFile("docker", args, {maxBuffer: 100 * 1024 * 1024}, (stdout) => {
 					console.log(stdout);
 					resolve();
