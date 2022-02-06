@@ -54,7 +54,6 @@
     "typescript": "^4.5.4"
   },
   "dependencies": {
-    "download": "^8.0.0",
     "recursive-copy": "^2.0.13"
   }
 }
