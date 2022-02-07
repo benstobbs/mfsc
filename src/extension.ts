@@ -46,7 +46,12 @@ function compileSoC() {
 }
 
 function compileCode(){
-	window.showInformationMessage("asdf");
+	const command = [
+		"make",
+		"-C", "/project/"
+	];
+
+	return dockerExec(command, "Compiling code", "Compiled!");
 }
 
 function uploadSoC(){
