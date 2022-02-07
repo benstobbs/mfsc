@@ -9,6 +9,10 @@ export function dockerExec(command: string[], progressTitle: string = "Working",
 
     const workspaceFolder = getWorkspaceFolder();
 
+    if (!workspaceFolder){
+        return window.showErrorMessage("No workspace folder open");
+    }
+
     const args = [
         "run",
         "--rm",

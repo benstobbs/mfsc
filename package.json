@@ -12,7 +12,8 @@
   "activationEvents": [
     "onCommand:mfsc.compileSoC",
     "onCommand:mfsc.uploadSoC",
-    "onCommand:mfsc.createProject"
+    "onCommand:mfsc.createProject",
+    "onCommand:mfsc.compileCode"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -28,6 +29,10 @@
       {
         "command": "mfsc.createProject",
         "title": "MFSC: Create Project"
+      },
+      {
+        "command": "mfsc.compileCode",
+        "title": "MFSC: Compile C Code"
       }
     ]
   },

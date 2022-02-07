@@ -13,6 +13,7 @@ export function activate(context: ExtensionContext) {
 	context.subscriptions.push(commands.registerCommand('mfsc.compileSoC', compileSoC));
 	context.subscriptions.push(commands.registerCommand('mfsc.uploadSoC', uploadSoC));
 	context.subscriptions.push(commands.registerCommand('mfsc.createProject', createProject));
+	context.subscriptions.push(commands.registerCommand('mfsc.compileCode', compileCode));
 }
 
 export function deactivate() {}
@@ -32,23 +33,20 @@ function createProject(){
 }
 
 function compileSoC() {
-	const buildFolder = getBuildFolder();
+	const command = [
+		"python3",
+		"/litex/litex-boards/litex_boards/targets/gsd_orangecrab.py",
+		"--device", "85F",
+		"--build",
+		"--output-dir",
+		"/project/build/"
+	];
 
-	if (buildFolder){		
-		const command = [
-			"python3",
-			"/litex/litex-boards/litex_boards/targets/gsd_orangecrab.py",
-			"--device", "85F",
-			"--build",
-			"--output-dir",
-			"/project/build/"
-		];
+	return dockerExec(command, "Building SoC", "Built SoC!");
+}
 
-		return dockerExec(command, "Building SoC", "Built SoC!");
-	}
-	else{
-		return window.showErrorMessage("No workspace folder open.");
-	}
+function compileCode(){
+	window.showInformationMessage("asdf");
 }
 
 function uploadSoC(){
