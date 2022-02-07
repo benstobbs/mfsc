@@ -11,7 +11,8 @@
   ],
   "activationEvents": [
     "onCommand:mfsc.compileSoC",
-    "onCommand:mfsc.uploadSoC"
+    "onCommand:mfsc.uploadSoC",
+    "onCommand:mfsc.createProject"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -23,6 +24,10 @@
       {
         "command": "mfsc.uploadSoC",
         "title": "MFSC: Upload SoC"
+      },
+      {
+        "command": "mfsc.createProject",
+        "title": "MFSC: Create Project"
       }
     ]
   },
@@ -49,6 +54,6 @@
     "typescript": "^4.5.4"
   },
   "dependencies": {
-    "download": "^8.0.0"
+    "recursive-copy": "^2.0.13"
   }
 }
