@@ -26,7 +26,7 @@ function createProject(){
 		return;
 	}
 
-	copy(templateFolder, workspaceFolder).catch((error: string) => {
+	return copy(templateFolder, workspaceFolder).catch((error: string) => {
 		window.showErrorMessage("Failed to create project: " + error);
 	});
 }
