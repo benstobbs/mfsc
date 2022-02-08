@@ -34,6 +34,15 @@ suite('Extension Test Suite', () => {
 		});
 	});
 
+	test('Run Compile C Code Command', async () => {
+		const testProjectFolder = await openTestFolder();
+
+		return vscode.commands.executeCommand('mfsc.compileCode')
+		.then(() => {
+			assert.strictEqual(existsSync(path.join(testProjectFolder, "program.bin")), true);
+		});
+	});
+
 	test('Run Build SoC Command', async () => {
 		const testProjectFolder = await openTestFolder();
 		
