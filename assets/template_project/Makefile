@@ -8,7 +8,7 @@ include $(SOC_DIRECTORY)/software/common.mak
 
 OBJECTS = isr.o main.o crt0.o
 
-all: demo.bin
+all: program.bin
 
 # pull in dependency info for *existing* .o files
 -include $(OBJECTS:.o=.d)
@@ -42,6 +42,6 @@ crt0.o: $(CPU_DIRECTORY)/crt0.S
 	$(assemble)
 
 clean:
-	$(RM) $(OBJECTS) $(OBJECTS:.o=.d) demo.elf demo.bin .*~ *~
+	$(RM) $(OBJECTS) $(OBJECTS:.o=.d) program.elf program.bin .*~ *~
 
 .PHONY: all main.o clean load
