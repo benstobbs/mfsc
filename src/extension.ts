@@ -1,8 +1,8 @@
-import { execFile, execFileSync, ExecFileException } from 'child_process';
+import { execFile, ExecFileException } from 'child_process';
 import { existsSync } from 'fs';
 import path = require('path');
 import { commands, ExtensionContext, ProgressLocation, window } from 'vscode';
-import { getBuildFolder, getWorkspaceFolder } from './helpers';
+import { dockerExec, getBuildFolder, getWorkspaceFolder } from './helpers';
 var copy = require('recursive-copy');
 
 var extensionPath: string;
@@ -13,6 +13,7 @@ export function activate(context: ExtensionContext) {
 	context.subscriptions.push(commands.registerCommand('mfsc.compileSoC', compileSoC));
 	context.subscriptions.push(commands.registerCommand('mfsc.uploadSoC', uploadSoC));
 	context.subscriptions.push(commands.registerCommand('mfsc.createProject', createProject));
+	context.subscriptions.push(commands.registerCommand('mfsc.compileCode', compileCode));
 }
 
 export function deactivate() {}
@@ -32,49 +33,25 @@ function createProject(){
 }
 
 function compileSoC() {
-	const workspaceFolder = getWorkspaceFolder();
-	const buildFolder = getBuildFolder();
+	const command = [
+		"python3",
+		"/litex/litex-boards/litex_boards/targets/gsd_orangecrab.py",
+		"--device", "85F",
+		"--build",
+		"--output-dir",
+		"/project/build/"
+	];
 
-	if (buildFolder){		
-		// ensure container clock is synchrononised with host
-		execFileSync("docker", ["run", "--rm", "--privileged", "benstobbs/litex-runner", "hwclock", "-s"]);
+	return dockerExec(command, "Building SoC", "Built SoC!");
+}
 
-		const args = [
-			"run",
-			"--rm",
-			"-v",
-			`${workspaceFolder}:/project`,
-			"benstobbs/litex-runner",
-			"python3",
-			"/litex/litex-boards/litex_boards/targets/gsd_orangecrab.py",
-			"--device", "85F",
-			"--build",
-			"--output-dir",
-			"/project/build/"
-		];
+function compileCode(){
+	const command = [
+		"make",
+		"-C", "/project/"
+	];
 
-		return window.withProgress({
-			location: ProgressLocation.Notification,
-			title: "Building SoC",
-			cancellable: false
-		}, () => {	
-			const p = new Promise<void>(resolve => {
-				execFile("docker", args, {maxBuffer: 100 * 1024 * 1024}, (error: ExecFileException | null) => {
-					if (error){
-						window.showErrorMessage(error.message);
-					}
-					else{
-						window.showInformationMessage("Built SoC!");
-					}
-					resolve();
-				});
-			});
-			return p;
-		});
-	}
-	else{
-		return window.showErrorMessage("No workspace folder open.");
-	}
+	return dockerExec(command, "Compiling code", "Compiled!");
 }
 
 function uploadSoC(){

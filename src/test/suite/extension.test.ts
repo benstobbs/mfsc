@@ -41,4 +41,13 @@ suite('Extension Test Suite', () => {
 			assert.strictEqual(existsSync(path.join(testProjectFolder, "build", "gateware", "gsd_orangecrab.bit")), true);
 		});
 	});
+
+	test('Run Compile C Code Command', async () => {
+		const testProjectFolder = await openTestFolder();
+
+		return vscode.commands.executeCommand('mfsc.compileCode')
+		.then(() => {
+			assert.strictEqual(existsSync(path.join(testProjectFolder, "program.bin")), true);
+		});
+	});
 });

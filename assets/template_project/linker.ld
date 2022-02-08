@@ -1,3 +1,6 @@
+/* This file was modified from LiteX and is Copyright (c) 2020 Florent Kermarrec <florent@enjoy-digital.fr> */
+/* License: BSD */
+
 INCLUDE generated/output_format.ld
 ENTRY(_start)
 
