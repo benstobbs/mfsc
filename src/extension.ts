@@ -14,6 +14,7 @@ export function activate(context: ExtensionContext) {
 	context.subscriptions.push(commands.registerCommand('mfsc.uploadSoC', uploadSoC));
 	context.subscriptions.push(commands.registerCommand('mfsc.createProject', createProject));
 	context.subscriptions.push(commands.registerCommand('mfsc.compileCode', compileCode));
+	context.subscriptions.push(commands.registerCommand('mfsc.runProgram', runProgram));
 }
 
 export function deactivate() {}
@@ -91,4 +92,20 @@ function uploadSoC(){
 		});
 		return p;
 	});
+}
+
+function runProgram(){
+	const workspaceFolder = getWorkspaceFolder();
+
+	if (!workspaceFolder){
+		return window.showErrorMessage("No workspace folder open.");
+	}
+
+	if (!existsSync(path.join(workspaceFolder, "program.bin"))){
+		return window.showErrorMessage("No program found. Compile C code first!");
+	}
+
+	// https://www.npmjs.com/package/serialport
+
+	return window.showInformationMessage("Successfully ran program!");
 }

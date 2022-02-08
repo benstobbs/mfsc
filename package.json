@@ -13,7 +13,8 @@
     "onCommand:mfsc.compileSoC",
     "onCommand:mfsc.uploadSoC",
     "onCommand:mfsc.createProject",
-    "onCommand:mfsc.compileCode"
+    "onCommand:mfsc.compileCode",
+    "onCommand:mfsc.runProgram"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -33,6 +34,10 @@
       {
         "command": "mfsc.compileCode",
         "title": "MFSC: Compile C Code"
+      },
+      {
+        "command": "mfsc.runProgram",
+        "title": "MFSC: Run Program"
       }
     ]
   },
