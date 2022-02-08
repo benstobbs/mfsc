@@ -4,9 +4,6 @@ import path = require("path");
 import { ProgressLocation, window, workspace } from "vscode";
 
 export function dockerExec(command: string[], progressTitle: string = "Working", progressDone: string = "Done!"){
-    // ensure container clock is synchrononised with host
-    execFileSync("docker", ["run", "--rm", "--privileged", "benstobbs/litex-runner", "hwclock", "-s"]);
-
     const workspaceFolder = getWorkspaceFolder();
 
     if (!workspaceFolder){
@@ -28,7 +25,9 @@ export function dockerExec(command: string[], progressTitle: string = "Working",
         cancellable: false
     }, () => {	
         const p = new Promise<void>(resolve => {
-            execFile("docker", args, {maxBuffer: 100 * 1024 * 1024}, (error: ExecFileException | null) => {
+            // ensure container clock is synchrononised with host
+            execFileSync("docker", ["run", "--rm", "--privileged", "benstobbs/litex-runner", "hwclock", "-s"]);
+            return execFile("docker", args, {maxBuffer: 100 * 1024 * 1024}, (error: ExecFileException | null) => {
                 if (error){
                     window.showErrorMessage(error.message);
                 }
