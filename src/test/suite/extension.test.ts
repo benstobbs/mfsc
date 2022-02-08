@@ -34,20 +34,20 @@ suite('Extension Test Suite', () => {
 		});
 	});
 
+	test('Run Build SoC Command', async () => {
+		const testProjectFolder = await openTestFolder();
+		
+		await vscode.commands.executeCommand("mfsc.compileSoC").then(() => {
+			assert.strictEqual(existsSync(path.join(testProjectFolder, "build", "gateware", "gsd_orangecrab.bit")), true);
+		});
+	});
+
 	test('Run Compile C Code Command', async () => {
 		const testProjectFolder = await openTestFolder();
 
 		return vscode.commands.executeCommand('mfsc.compileCode')
 		.then(() => {
 			assert.strictEqual(existsSync(path.join(testProjectFolder, "program.bin")), true);
-		});
-	});
-
-	test('Run Build SoC Command', async () => {
-		const testProjectFolder = await openTestFolder();
-		
-		await vscode.commands.executeCommand("mfsc.compileSoC").then(() => {
-			assert.strictEqual(existsSync(path.join(testProjectFolder, "build", "gateware", "gsd_orangecrab.bit")), true);
 		});
 	});
 });
