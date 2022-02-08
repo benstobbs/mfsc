@@ -1,3 +1,6 @@
+# This file was modified from LiteX and is Copyright (c) 2020 Florent Kermarrec <florent@enjoy-digital.fr>
+# License: BSD
+
 BUILD_DIR=/project/build
 
 include $(BUILD_DIR)/software/include/generated/variables.mak
@@ -14,7 +17,7 @@ all: demo.bin
 	$(OBJCOPY) -O binary $< $@
 	chmod -x $@
 
-demo.elf: $(OBJECTS)
+program.elf: $(OBJECTS)
 	$(CC) $(LDFLAGS) \
 		-T linker.ld \
 		-N -o $@ \
