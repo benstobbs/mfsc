@@ -25,7 +25,7 @@ suite('Extension Test Suite', () => {
 	test('Run Create Project Command', async () => {
 		const testProjectFolder = await openTestFolder();
 
-		await vscode.commands.executeCommand("mfsc.createProject").then(() => {
+		return vscode.commands.executeCommand("mfsc.createProject").then(() => {
 			const files = ["main.c", "isr.c", "linker.ld", "Makefile"];
 
 			files.forEach((file) => {
@@ -37,7 +37,7 @@ suite('Extension Test Suite', () => {
 	test('Run Build SoC Command', async () => {
 		const testProjectFolder = await openTestFolder();
 		
-		await vscode.commands.executeCommand("mfsc.compileSoC").then(() => {
+		return vscode.commands.executeCommand("mfsc.compileSoC").then(() => {
 			assert.strictEqual(existsSync(path.join(testProjectFolder, "build", "gateware", "gsd_orangecrab.bit")), true);
 		});
 	});
