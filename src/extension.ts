@@ -4,6 +4,7 @@ import path = require('path');
 import { commands, ExtensionContext, ProgressLocation, window } from 'vscode';
 import { dockerExec, getBuildFolder, getWorkspaceFolder } from './helpers';
 var copy = require('recursive-copy');
+import { SerialPort } from 'serialport'
 
 var extensionPath: string;
 
@@ -101,11 +102,51 @@ function runProgram(){
 		return window.showErrorMessage("No workspace folder open.");
 	}
 
-	if (!existsSync(path.join(workspaceFolder, "program.bin"))){
+	const programPath = path.join(workspaceFolder, "program.bin");
+
+	if (!existsSync(programPath)){
 		return window.showErrorMessage("No program found. Compile C code first!");
 	}
 
-	// https://www.npmjs.com/package/serialport
+	return SerialPort.list().then((portInfos) => {
+		if (portInfos.length < 1){
+			return window.showErrorMessage("No serial ports found.");
+		}
 
-	return window.showInformationMessage("Successfully ran program!");
+		const portPaths = portInfos.map((port) => port.path);
+
+		return window.showQuickPick(portPaths, {canPickMany: false}).then((selection) => {
+			if (!selection){
+				return window.showErrorMessage("You must select a serial port.")
+			}
+
+			return window.withProgress({
+				location: ProgressLocation.Notification,
+				title: "Running Program",
+				cancellable: false
+			}, () => {
+				return new Promise<string>(resolve => {
+					const litexArgs = [
+						"--serial-boot",
+						"--kernel=" + programPath,
+						selection
+					];
+
+					execFile("litex_term", litexArgs, {}, (error: ExecFileException | null, output) => {
+						if (error){
+							window.showErrorMessage(error.message);
+						}
+						else{
+							window.showInformationMessage("Succesfully ran program: " + output);
+						}
+						resolve("Succesfully ran program: " + output);
+					});
+				});
+			});
+		});
+	});
+
+	
+
+	
 }
