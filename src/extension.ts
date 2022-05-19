@@ -119,34 +119,35 @@ function runProgram(){
 			if (!selection){
 				return window.showErrorMessage("You must select a serial port.")
 			}
+			return new Promise<string>(resolve => {
+				const litexArgs = [
+					"--serial-boot",
+					"--kernel=" + programPath,
+					selection
+				];
 
-			return window.withProgress({
-				location: ProgressLocation.Notification,
-				title: "Running Program",
-				cancellable: false
-			}, () => {
-				return new Promise<string>(resolve => {
-					const litexArgs = [
-						"--serial-boot",
-						"--kernel=" + programPath,
-						selection
-					];
+				const litexTerm = execFile("litex_term", litexArgs, {shell: true});
+				
+				const outputChannel = window.createOutputChannel("MFSC: Program Output");
+				outputChannel.show(true);
 
-					execFile("litex_term", litexArgs, {}, (error: ExecFileException | null, output) => {
-						if (error){
-							window.showErrorMessage(error.message);
-						}
-						else{
-							window.showInformationMessage("Succesfully ran program: " + output);
-						}
-						resolve("Succesfully ran program: " + output);
-					});
+				litexTerm.on("close", () => {
+					outputChannel.dispose();
+					resolve("Closed channel.");
 				});
+
+				if (litexTerm.stdout){
+					litexTerm.stdout.on("data", (chunk) => {
+						outputChannel.append(chunk);
+					});
+				}
+
+				if (litexTerm.stderr){
+					litexTerm.stderr.on("data", (chunk) => {
+						outputChannel.append(chunk);
+					})
+				}
 			});
 		});
 	});
-
-	
-
-	
 }
