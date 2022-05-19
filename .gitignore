@@ -5,3 +5,4 @@ tools
 .vscode-test/
 *.vsix
 docker/valentyusb
+valentyusb
