@@ -15,7 +15,7 @@ export function dockerExec(command: string[], progressTitle: string = "Working",
         "--rm",
         "-v",
         `${workspaceFolder}:/project`,
-        "benstobbs/litex-runner"
+        "benstobbs/litex-runner:latest"
     ]
     .concat(command);
 

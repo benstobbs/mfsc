@@ -37,7 +37,7 @@ function createProject(){
 function compileSoC() {
 	const command = [
 		"python3",
-		"/litex/litex-boards/litex_boards/targets/gsd_orangecrab.py",
+		"/target.py",
 		"--device", "85F",
 		"--build",
 		"--output-dir",

@@ -1,5 +1,7 @@
 FROM ubuntu:20.04
 
+COPY target.py /target.py
+
 RUN apt-get update
 RUN apt-get upgrade -y
 RUN apt-get install -y wget python3 python3-pip git
