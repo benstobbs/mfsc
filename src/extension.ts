@@ -4,6 +4,7 @@ import path = require('path');
 import { commands, ExtensionContext, ProgressLocation, window } from 'vscode';
 import { dockerExec, getBuildFolder, getWorkspaceFolder } from './helpers';
 var copy = require('recursive-copy');
+import { SerialPort } from 'serialport'
 
 var extensionPath: string;
 
@@ -14,6 +15,7 @@ export function activate(context: ExtensionContext) {
 	context.subscriptions.push(commands.registerCommand('mfsc.uploadSoC', uploadSoC));
 	context.subscriptions.push(commands.registerCommand('mfsc.createProject', createProject));
 	context.subscriptions.push(commands.registerCommand('mfsc.compileCode', compileCode));
+	context.subscriptions.push(commands.registerCommand('mfsc.runProgram', runProgram));
 }
 
 export function deactivate() {}
@@ -90,5 +92,62 @@ function uploadSoC(){
 			});
 		});
 		return p;
+	});
+}
+
+function runProgram(){
+	const workspaceFolder = getWorkspaceFolder();
+
+	if (!workspaceFolder){
+		return window.showErrorMessage("No workspace folder open.");
+	}
+
+	const programPath = path.join(workspaceFolder, "program.bin");
+
+	if (!existsSync(programPath)){
+		return window.showErrorMessage("No program found. Compile C code first!");
+	}
+
+	return SerialPort.list().then((portInfos) => {
+		if (portInfos.length < 1){
+			return window.showErrorMessage("No serial ports found.");
+		}
+
+		const portPaths = portInfos.map((port) => port.path);
+
+		return window.showQuickPick(portPaths, {canPickMany: false}).then((selection) => {
+			if (!selection){
+				return window.showErrorMessage("You must select a serial port.")
+			}
+			return new Promise<string>(resolve => {
+				const litexArgs = [
+					"--serial-boot",
+					"--kernel=" + programPath,
+					selection
+				];
+
+				const litexTerm = execFile("litex_term", litexArgs, {shell: true});
+				
+				const outputChannel = window.createOutputChannel("MFSC: Program Output");
+				outputChannel.show(true);
+
+				litexTerm.on("close", () => {
+					outputChannel.dispose();
+					resolve("Closed channel.");
+				});
+
+				if (litexTerm.stdout){
+					litexTerm.stdout.on("data", (chunk) => {
+						outputChannel.append(chunk);
+					});
+				}
+
+				if (litexTerm.stderr){
+					litexTerm.stderr.on("data", (chunk) => {
+						outputChannel.append(chunk);
+					})
+				}
+			});
+		});
 	});
 }
