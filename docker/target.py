@@ -21,7 +21,7 @@ from litex.soc.cores.clock import *
 from litex.soc.integration.soc_core import *
 from litex.soc.integration.builder import *
 from litex.soc.cores.led import LedChaser
-from litex.soc.cores.gpio import GPIOOut
+from litex.soc.cores.gpio import GPIOTristate
 from litex.soc.cores.timer import Timer
 
 from litedram.modules import MT41K64M16, MT41K128M16, MT41K256M16, MT41K512M16
@@ -203,11 +203,16 @@ class BaseSoC(SoCCore):
 
         for i, gpio_connector in enumerate(gpio_connectors.split(" ")):
             if gpio_connector != "-":
+                platform_extension_name = f"gpio_{i}"
                 platform.add_extension([
-                    (f"gpio_{i}", 0, Pins(gpio_connector), IOStandard("LVCMOS33")),
+                    (platform_extension_name, 0, Pins(gpio_connector), IOStandard("LVCMOS33")),
                 ])
 
-        self.submodules.gpio = GPIOOut(platform.request("gpio_0"))
+                setattr(
+                    self.submodules,
+                    platform_extension_name,
+                    GPIOTristate(platform.request(platform_extension_name))
+                )
 
         # Timer ------------------------------------------------------------------------------------
         self.submodules.timer = Timer()
