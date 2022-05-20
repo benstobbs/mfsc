@@ -151,12 +151,15 @@ class CustomVeilogModule(Module, AutoCSR):
         io_dict = {}
 
         for port in io:
+            # If signal type is a clock, provide the system clock as an input to the Veilog module
             if port["type"] == "clock":
                 io_dict[f"i_{port['name']}"] = ClockSignal()
 
             elif port["type"] == "csr":
                 csr_name = port["name"] + "_csr"
-
+                
+                # For a CSR output, create a CSRStatus and connect the status
+                # to the relevant output of the Verilog module's
                 if port["direction"] == "output":
                     setattr(
                         self,
@@ -165,8 +168,16 @@ class CustomVeilogModule(Module, AutoCSR):
                     )
                     io_dict[f"o_{port['name']}"] = getattr(self, csr_name).status
 
+                # For a CSR input, create a CSRStorage and connect the storage to the relevant
+                # input of the Verilog module
                 elif port["direction"] == "input":
-                    pass
+                    setattr(
+                        self,
+                        csr_name,
+                        CSRStorage(port["width"], name = port["name"])
+                    )
+                    io_dict[f"i_{port['name']}"] = getattr(self, csr_name).storage
+
                 else:
                     raise SyntaxError("Port direction must be input or output.")
 
