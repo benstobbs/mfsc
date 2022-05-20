@@ -6,12 +6,12 @@
 # Copyright (c) Greg Davill <greg.davill@gmail.com>
 # SPDX-License-Identifier: BSD-2-Clause
 
-import os
-import sys
+import json
 
 from migen import *
 from migen.genlib.misc import WaitTimer
 from migen.genlib.resetsync import AsyncResetSynchronizer
+from migen.genlib.cdc import MultiReg
 
 from litex_boards.platforms import gsd_orangecrab
 
@@ -28,6 +28,7 @@ from litedram.modules import MT41K64M16, MT41K128M16, MT41K256M16, MT41K512M16
 from litedram.phy import ECP5DDRPHY
 
 from litex.build.generic_platform import Pins, IOStandard
+from litex.soc.interconnect.csr import *
 
 # CRG ---------------------------------------------------------------------------------------------
 
@@ -145,6 +146,38 @@ class _CRGSDRAM(Module):
         self.comb += reset_timer.wait.eq(~rst_n)
         self.comb += platform.request("rst_n").eq(~reset_timer.done)
 
+class CustomVeilogModule(Module, AutoCSR):
+    def __init__(self, module, io):
+        io_dict = {}
+
+        for port in io:
+            if port["type"] == "clock":
+                io_dict[f"i_{port['name']}"] = ClockSignal()
+
+            elif port["type"] == "csr":
+                csr_name = port["name"] + "_csr"
+
+                if port["direction"] == "output":
+                    setattr(
+                        self,
+                        csr_name,
+                        CSRStatus(port["width"], name = port["name"])
+                    )
+                    io_dict[f"o_{port['name']}"] = getattr(self, csr_name).status
+
+                elif port["direction"] == "input":
+                    pass
+                else:
+                    raise SyntaxError("Port direction must be input or output.")
+
+            elif port["type"] == "gpio":
+                pass
+            else:
+                raise SyntaxError("Custom module IO must be either 'clock', 'input' or 'output'.")
+        
+        print(io_dict)
+        self.specials += Instance(module, **io_dict)
+
 # BaseSoC ------------------------------------------------------------------------------------------
 
 class BaseSoC(SoCCore):
@@ -216,6 +249,31 @@ class BaseSoC(SoCCore):
 
         # Timer ------------------------------------------------------------------------------------
         self.submodules.timer = Timer()
+
+        # Custom Hardware --------------------------------------------------------------------------
+        with open("/home/ben/scratch/mfsc_config.json") as f:
+            config_file = json.load(f)
+
+        if "custom_verilog_files" in config_file:
+            for custom_file in config_file["custom_verilog_files"]:
+                platform.add_source(custom_file)
+
+        module_counter = {}
+
+        if "custom_verilog_modules" in config_file:
+            for custom_module in config_file["custom_verilog_modules"]:
+                if custom_module["module"] not in module_counter:
+                    module_counter[custom_module["module"]] = 0
+                else:
+                    module_counter[custom_module["module"]] += 1
+
+                submodule_name = custom_module["module"] + "_" + str(module_counter[custom_module["module"]])
+
+                setattr(
+                    self.submodules,
+                    submodule_name,
+                    CustomVeilogModule(custom_module["module"], custom_module["io"])
+                )
 
 # Build --------------------------------------------------------------------------------------------
 
