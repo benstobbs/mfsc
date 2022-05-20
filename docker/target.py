@@ -147,7 +147,7 @@ class _CRGSDRAM(Module):
         self.comb += platform.request("rst_n").eq(~reset_timer.done)
 
 class CustomVeilogModule(Module, AutoCSR):
-    def __init__(self, module, io):
+    def __init__(self, platform, module, io, used_gpios):
         io_dict = {}
 
         for port in io:
@@ -182,9 +182,17 @@ class CustomVeilogModule(Module, AutoCSR):
                     raise SyntaxError("Port direction must be input or output.")
 
             elif port["type"] == "gpio":
-                pass
+                used_gpios += [port["pin"]]
+
+                if port["direction"] == "output":
+                    io_dict[f"o_{port['name']}"] = platform.request(f"GPIO_{port['pin']}")
+                elif port["direction"] == "input":
+                    io_dict[f"i_{port['name']}"] = platform.request(f"GPIO_{port['pin']}")
+                else:
+                    raise SyntaxError("Port direction must be input or output.")
+
             else:
-                raise SyntaxError("Custom module IO must be either 'clock', 'input' or 'output'.")
+                raise SyntaxError("Custom module IO must be either 'clock', 'csr' or 'gpio'.")
         
         print(io_dict)
         self.specials += Instance(module, **io_dict)
@@ -241,22 +249,37 @@ class BaseSoC(SoCCore):
                 pads         = led_pads,
                 sys_clk_freq = sys_clk_freq)
         
-        # GPIO -------------------------------------------------------------------------------------
-        connectors = gsd_orangecrab._connectors_r0_2 if revision == "0.2" else gsd_orangecrab._connectors_r0_1
-        gpio_connectors = [c for c in connectors if c[0] == "GPIO"][0][1]
+        # GPIO Setup -------------------------------------------------------------------------------
+        GPIO_MAP = {
+            # Board Name : FPGA Pin Name
+            "A0":   "L4",
+            "A1":   "N3",
+            "A2":   "N4",
+            "A3":   "H4",
+            "A4":   "G4",
+            "A5":   "T17",
+            "SCK":  "R17",
+            "MOSI": "N16",
+            "MISO": "N15",
+            "0":    "N17",
+            "1":    "M18",
+            "SDA":  "C10",
+            "SCL":  "C9",
+            "5":    "B10",
+            "6":    "B9",
+            "9":    "C8",
+            "10":   "B8",
+            "11":   "A8",
+            "12":   "H2",
+            "13":   "J2",
+        }
 
-        for i, gpio_connector in enumerate(gpio_connectors.split(" ")):
-            if gpio_connector != "-":
-                platform_extension_name = f"gpio_{i}"
-                platform.add_extension([
-                    (platform_extension_name, 0, Pins(gpio_connector), IOStandard("LVCMOS33")),
-                ])
+        for board_name in GPIO_MAP:
+            platform.add_extension([
+                (f"GPIO_{board_name}", 0, Pins(GPIO_MAP[board_name]), IOStandard("LVCMOS33")),
+            ])
 
-                setattr(
-                    self.submodules,
-                    platform_extension_name,
-                    GPIOTristate(platform.request(platform_extension_name))
-                )
+        used_gpios = []
 
         # Timer ------------------------------------------------------------------------------------
         self.submodules.timer = Timer()
@@ -283,8 +306,20 @@ class BaseSoC(SoCCore):
                 setattr(
                     self.submodules,
                     submodule_name,
-                    CustomVeilogModule(custom_module["module"], custom_module["io"])
+                    CustomVeilogModule(
+                        platform,
+                        custom_module["module"],
+                        custom_module["io"],
+                        used_gpios
+                    )
                 )
+
+        # setattr(
+        #     self.submodules,
+        #     platform_extension_name,
+        #     GPIOTristate(platform.request(platform_extension_name))
+        # )
+
 
 # Build --------------------------------------------------------------------------------------------
 
