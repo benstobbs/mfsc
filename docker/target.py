@@ -11,7 +11,6 @@ import json
 from migen import *
 from migen.genlib.misc import WaitTimer
 from migen.genlib.resetsync import AsyncResetSynchronizer
-from migen.genlib.cdc import MultiReg
 
 from litex_boards.platforms import gsd_orangecrab
 
@@ -194,7 +193,6 @@ class CustomVeilogModule(Module, AutoCSR):
             else:
                 raise SyntaxError("Custom module IO must be either 'clock', 'csr' or 'gpio'.")
         
-        print(io_dict)
         self.specials += Instance(module, **io_dict)
 
 # BaseSoC ------------------------------------------------------------------------------------------
@@ -274,9 +272,9 @@ class BaseSoC(SoCCore):
             "13":   "J2",
         }
 
-        for board_name in GPIO_MAP:
+        for pin_name in GPIO_MAP:
             platform.add_extension([
-                (f"GPIO_{board_name}", 0, Pins(GPIO_MAP[board_name]), IOStandard("LVCMOS33")),
+                (f"GPIO_{pin_name}", 0, Pins(GPIO_MAP[pin_name]), IOStandard("LVCMOS33")),
             ])
 
         used_gpios = []
@@ -314,11 +312,15 @@ class BaseSoC(SoCCore):
                     )
                 )
 
-        # setattr(
-        #     self.submodules,
-        #     platform_extension_name,
-        #     GPIOTristate(platform.request(platform_extension_name))
-        # )
+        for pin_name in GPIO_MAP:
+            if pin_name not in used_gpios:
+                platform_extension_name = f"GPIO_{pin_name}"
+
+                setattr(
+                    self.submodules,
+                    platform_extension_name,
+                    GPIOTristate(platform.request(platform_extension_name))
+                )
 
 
 # Build --------------------------------------------------------------------------------------------
