@@ -6,8 +6,7 @@
 # Copyright (c) Greg Davill <greg.davill@gmail.com>
 # SPDX-License-Identifier: BSD-2-Clause
 
-import os
-import sys
+import json
 
 from migen import *
 from migen.genlib.misc import WaitTimer
@@ -28,6 +27,7 @@ from litedram.modules import MT41K64M16, MT41K128M16, MT41K256M16, MT41K512M16
 from litedram.phy import ECP5DDRPHY
 
 from litex.build.generic_platform import Pins, IOStandard
+from litex.soc.interconnect.csr import *
 
 # CRG ---------------------------------------------------------------------------------------------
 
@@ -145,6 +145,60 @@ class _CRGSDRAM(Module):
         self.comb += reset_timer.wait.eq(~rst_n)
         self.comb += platform.request("rst_n").eq(~reset_timer.done)
 
+class CustomVeilogModule(Module, AutoCSR):
+    def __init__(self, platform, module, io, used_gpios):
+        io_dict = {}
+
+        for port in io:
+            # If signal type is a clock, provide the system clock as an input to the Verilog module
+            if port["type"] == "clock":
+                io_dict[f"i_{port['name']}"] = ClockSignal()
+
+            # If signal type is a clock, provide the system reset signal as an input to the Verilog module
+            if port["type"] == "reset":
+                io_dict[f"i_{port['name']}"] = ResetSignal()
+
+            elif port["type"] == "csr":
+                csr_name = port["name"] + "_csr"
+                
+                # For a CSR output, create a CSRStatus and connect the status
+                # to the relevant output of the Verilog module's
+                if port["direction"] == "output":
+                    setattr(
+                        self,
+                        csr_name,
+                        CSRStatus(port["width"], name = port["name"])
+                    )
+                    io_dict[f"o_{port['name']}"] = getattr(self, csr_name).status
+
+                # For a CSR input, create a CSRStorage and connect the storage to the relevant
+                # input of the Verilog module
+                elif port["direction"] == "input":
+                    setattr(
+                        self,
+                        csr_name,
+                        CSRStorage(port["width"], name = port["name"])
+                    )
+                    io_dict[f"i_{port['name']}"] = getattr(self, csr_name).storage
+
+                else:
+                    raise SyntaxError("Port direction must be input or output.")
+
+            elif port["type"] == "gpio":
+                used_gpios += [port["pin"]]
+
+                if port["direction"] == "output":
+                    io_dict[f"o_{port['name']}"] = platform.request(f"GPIO_{port['pin']}")
+                elif port["direction"] == "input":
+                    io_dict[f"i_{port['name']}"] = platform.request(f"GPIO_{port['pin']}")
+                else:
+                    raise SyntaxError("Port direction must be input or output.")
+
+            else:
+                raise SyntaxError("Custom module IO must be either 'clock', 'csr' or 'gpio'.")
+        
+        self.specials += Instance(module, **io_dict)
+
 # BaseSoC ------------------------------------------------------------------------------------------
 
 class BaseSoC(SoCCore):
@@ -197,16 +251,74 @@ class BaseSoC(SoCCore):
                 pads         = led_pads,
                 sys_clk_freq = sys_clk_freq)
         
-        # GPIO -------------------------------------------------------------------------------------
-        connectors = gsd_orangecrab._connectors_r0_2 if revision == "0.2" else gsd_orangecrab._connectors_r0_1
-        gpio_connectors = [c for c in connectors if c[0] == "GPIO"][0][1]
+        # GPIO Setup -------------------------------------------------------------------------------
+        GPIO_MAP = {
+            # Board Name : FPGA Pin Name
+            "A0":   "L4",
+            "A1":   "N3",
+            "A2":   "N4",
+            "A3":   "H4",
+            "A4":   "G4",
+            "A5":   "T17",
+            "SCK":  "R17",
+            "MOSI": "N16",
+            "MISO": "N15",
+            "0":    "N17",
+            "1":    "M18",
+            "SDA":  "C10",
+            "SCL":  "C9",
+            "5":    "B10",
+            "6":    "B9",
+            "9":    "C8",
+            "10":   "B8",
+            "11":   "A8",
+            "12":   "H2",
+            "13":   "J2",
+        }
 
-        for i, gpio_connector in enumerate(gpio_connectors.split(" ")):
-            if gpio_connector != "-":
-                platform_extension_name = f"gpio_{i}"
-                platform.add_extension([
-                    (platform_extension_name, 0, Pins(gpio_connector), IOStandard("LVCMOS33")),
-                ])
+        for pin_name in GPIO_MAP:
+            platform.add_extension([
+                (f"GPIO_{pin_name}", 0, Pins(GPIO_MAP[pin_name]), IOStandard("LVCMOS33")),
+            ])
+
+        used_gpios = []
+
+        # Timer ------------------------------------------------------------------------------------
+        self.submodules.timer = Timer()
+
+        # Custom Hardware --------------------------------------------------------------------------
+        with open("/home/ben/scratch/mfsc_config.json") as f:
+            config_file = json.load(f)
+
+        if "custom_verilog_files" in config_file:
+            for custom_file in config_file["custom_verilog_files"]:
+                platform.add_source(custom_file)
+
+        module_counter = {}
+
+        if "custom_verilog_modules" in config_file:
+            for custom_module in config_file["custom_verilog_modules"]:
+                if custom_module["module"] not in module_counter:
+                    module_counter[custom_module["module"]] = 0
+                else:
+                    module_counter[custom_module["module"]] += 1
+
+                submodule_name = custom_module["module"] + "_" + str(module_counter[custom_module["module"]])
+
+                setattr(
+                    self.submodules,
+                    submodule_name,
+                    CustomVeilogModule(
+                        platform,
+                        custom_module["module"],
+                        custom_module["io"],
+                        used_gpios
+                    )
+                )
+
+        for pin_name in GPIO_MAP:
+            if pin_name not in used_gpios:
+                platform_extension_name = f"GPIO_{pin_name}"
 
                 setattr(
                     self.submodules,
@@ -214,8 +326,6 @@ class BaseSoC(SoCCore):
                     GPIOTristate(platform.request(platform_extension_name))
                 )
 
-        # Timer ------------------------------------------------------------------------------------
-        self.submodules.timer = Timer()
 
 # Build --------------------------------------------------------------------------------------------
 
