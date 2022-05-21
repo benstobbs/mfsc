@@ -150,9 +150,13 @@ class CustomVeilogModule(Module, AutoCSR):
         io_dict = {}
 
         for port in io:
-            # If signal type is a clock, provide the system clock as an input to the Veilog module
+            # If signal type is a clock, provide the system clock as an input to the Verilog module
             if port["type"] == "clock":
                 io_dict[f"i_{port['name']}"] = ClockSignal()
+
+            # If signal type is a clock, provide the system reset signal as an input to the Verilog module
+            if port["type"] == "reset":
+                io_dict[f"i_{port['name']}"] = ResetSignal()
 
             elif port["type"] == "csr":
                 csr_name = port["name"] + "_csr"
