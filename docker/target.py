@@ -287,7 +287,7 @@ class BaseSoC(SoCCore):
         self.submodules.timer = Timer()
 
         # Custom Hardware --------------------------------------------------------------------------
-        with open("/home/ben/scratch/mfsc_config.json") as f:
+        with open("/project/mfsc_config.json") as f:
             config_file = json.load(f)
 
         if "custom_verilog_files" in config_file:
