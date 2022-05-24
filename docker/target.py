@@ -155,7 +155,7 @@ class CustomVeilogModule(Module, AutoCSR):
                 io_dict[f"i_{port['name']}"] = ClockSignal()
 
             # If signal type is a clock, provide the system reset signal as an input to the Verilog module
-            if port["type"] == "reset":
+            elif port["type"] == "reset":
                 io_dict[f"i_{port['name']}"] = ResetSignal()
 
             elif port["type"] == "csr":
@@ -195,7 +195,7 @@ class CustomVeilogModule(Module, AutoCSR):
                     raise SyntaxError("Port direction must be input or output.")
 
             else:
-                raise SyntaxError("Custom module IO must be either 'clock', 'csr' or 'gpio'.")
+                raise SyntaxError("Custom module IO type must be either 'clock', 'reset', 'csr' or 'gpio'.")
         
         self.specials += Instance(module, **io_dict)
 
