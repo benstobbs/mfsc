@@ -1,9 +1,16 @@
-import { execFile, ExecFileException, execFileSync } from "child_process";
+import { ChildProcess, execFile, ExecFileException } from "child_process";
 import { existsSync, mkdirSync } from "fs";
 import path = require("path");
-import { ProgressLocation, window, workspace } from "vscode";
+import { OutputChannel, ProgressLocation, window, workspace } from "vscode";
+import { workspaceState } from "./extension";
 
-export function dockerExec(command: string[], progressTitle: string = "Working", progressDone: string = "Done!"){
+export function dockerExec(
+    command: string[],
+    channelTitle: string,
+    progressTitle: string = "Working",
+    doneTitle: string = "Done!"
+    ){
+        
     const workspaceFolder = getWorkspaceFolder();
 
     if (!workspaceFolder){
@@ -25,20 +32,52 @@ export function dockerExec(command: string[], progressTitle: string = "Working",
         cancellable: false
     }, () => {	
         const p = new Promise<void>(resolve => {
-            // ensure container clock is synchrononised with host
-            execFileSync("docker", ["run", "--rm", "--privileged", "benstobbs/litex-runner", "hwclock", "-s"]);
-            return execFile("docker", args, {maxBuffer: 100 * 1024 * 1024}, (error: ExecFileException | null) => {
+            const childProcess = execFile("docker", args, {maxBuffer: 100 * 1024 * 1024}, (error: ExecFileException | null) => {
                 if (error){
                     window.showErrorMessage(error.message);
                 }
                 else{
-                    window.showInformationMessage(progressDone);
+                    window.showInformationMessage(doneTitle);
                 }
                 resolve();
             });
+
+            displayOutput(childProcess, channelTitle);
+            
+            return childProcess;
         });
         return p;
     });
+}
+
+export function getPersistentOutputChannel(channelName: string){
+    var channel: (OutputChannel | undefined) = workspaceState.get(channelName);
+    
+    if (!channel){
+        channel = window.createOutputChannel(channelName);
+        workspaceState.update(channelName, channel);
+    }
+
+    return channel;
+}
+
+export function displayOutput(childProcess: ChildProcess, outputChannelName: string){			
+    const outputChannel = getPersistentOutputChannel(outputChannelName);
+    outputChannel.show(true);
+
+    if (childProcess.stdout){
+        childProcess.stdout.on("data", (chunk) => {
+            outputChannel.append(chunk);
+        });
+    }
+
+    if (childProcess.stderr){
+        childProcess.stderr.on("data", (chunk) => {
+            outputChannel.append(chunk);
+        })
+    }
+
+    return outputChannel;
 }
 
 export function getWorkspaceFolder(){

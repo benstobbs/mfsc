@@ -1,15 +1,17 @@
 import { execFile, ExecFileException } from 'child_process';
 import { existsSync } from 'fs';
 import path = require('path');
-import { commands, ExtensionContext, ProgressLocation, window } from 'vscode';
-import { dockerExec, getBuildFolder, getWorkspaceFolder } from './helpers';
+import { commands, ExtensionContext, Memento, ProgressLocation, window } from 'vscode';
+import { dockerExec, getBuildFolder, getWorkspaceFolder, displayOutput } from './helpers';
 var copy = require('recursive-copy');
 import { SerialPort } from 'serialport'
 
 var extensionPath: string;
+export var workspaceState: Memento;
 
 export function activate(context: ExtensionContext) {
 	extensionPath = context.extensionPath;
+	workspaceState = context.workspaceState;
 
 	context.subscriptions.push(commands.registerCommand('mfsc.compileSoC', compileSoC));
 	context.subscriptions.push(commands.registerCommand('mfsc.uploadSoC', uploadSoC));
@@ -44,7 +46,7 @@ function compileSoC() {
 		"/project/build/"
 	];
 
-	return dockerExec(command, "Building SoC", "Built SoC!");
+	return dockerExec(command, "MFSC: Compile SoC", "Building SoC", "Built SoC!");
 }
 
 function compileCode(){
@@ -53,7 +55,7 @@ function compileCode(){
 		"-C", "/project/"
 	];
 
-	return dockerExec(command, "Compiling code", "Compiled!");
+	return dockerExec(command, "MFSC: Compile C Code", "Compiling code", "Compiled!");
 }
 
 function uploadSoC(){
@@ -81,7 +83,7 @@ function uploadSoC(){
 		cancellable: false
 	}, () => {	
 		const p = new Promise<void>(resolve => {
-			execFile("dfu-util", dfuArgs, {}, (error: ExecFileException | null) => {
+			const dfuUtil = execFile("dfu-util", dfuArgs, {}, (error: ExecFileException | null) => {
 				if (error){
 					window.showErrorMessage(error.message);
 				}
@@ -90,6 +92,8 @@ function uploadSoC(){
 				}
 				resolve();
 			});
+
+			displayOutput(dfuUtil, "MFSC: Upload SoC");
 		});
 		return p;
 	});
@@ -127,26 +131,11 @@ function runProgram(){
 				];
 
 				const litexTerm = execFile("litex_term", litexArgs, {shell: true});
-				
-				const outputChannel = window.createOutputChannel("MFSC: Program Output");
-				outputChannel.show(true);
+				displayOutput(litexTerm, "MFSC: Run Program");
 
 				litexTerm.on("close", () => {
-					outputChannel.dispose();
-					resolve("Closed channel.");
+					resolve("LiteX term closed.");
 				});
-
-				if (litexTerm.stdout){
-					litexTerm.stdout.on("data", (chunk) => {
-						outputChannel.append(chunk);
-					});
-				}
-
-				if (litexTerm.stderr){
-					litexTerm.stderr.on("data", (chunk) => {
-						outputChannel.append(chunk);
-					})
-				}
 			});
 		});
 	});
