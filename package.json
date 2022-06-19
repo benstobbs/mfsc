@@ -61,7 +61,7 @@
     "eslint": "^8.18.0",
     "glob": "^7.2.0",
     "mocha": "^9.1.3",
-    "typescript": "^4.5.4"
+    "typescript": "^4.7.4"
   },
   "dependencies": {
     "recursive-copy": "^2.0.13",
