@@ -58,6 +58,8 @@ export function displayOutput(childProcess: ChildProcess, outputChannelName: str
             outputChannel.append(chunk);
         })
     }
+
+    return outputChannel;
 }
 
 export function getWorkspaceFolder(){
