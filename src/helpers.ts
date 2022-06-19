@@ -1,9 +1,16 @@
 import { ChildProcess, execFile, ExecFileException } from "child_process";
 import { existsSync, mkdirSync } from "fs";
 import path = require("path");
-import { ProgressLocation, window, workspace } from "vscode";
+import { OutputChannel, ProgressLocation, window, workspace } from "vscode";
+import { workspaceState } from "./extension";
 
-export function dockerExec(command: string[], progressTitle: string = "Working", progressDone: string = "Done!"){
+export function dockerExec(
+    command: string[],
+    channelTitle: string,
+    progressTitle: string = "Working",
+    doneTitle: string = "Done!"
+    ){
+        
     const workspaceFolder = getWorkspaceFolder();
 
     if (!workspaceFolder){
@@ -30,12 +37,12 @@ export function dockerExec(command: string[], progressTitle: string = "Working",
                     window.showErrorMessage(error.message);
                 }
                 else{
-                    window.showInformationMessage(progressDone);
+                    window.showInformationMessage(doneTitle);
                 }
                 resolve();
             });
 
-            displayOutput(childProcess, "MFSC Output");
+            displayOutput(childProcess, channelTitle);
             
             return childProcess;
         });
@@ -43,8 +50,19 @@ export function dockerExec(command: string[], progressTitle: string = "Working",
     });
 }
 
+export function getPersistentOutputChannel(channelName: string){
+    var channel: (OutputChannel | undefined) = workspaceState.get(channelName);
+    
+    if (!channel){
+        channel = window.createOutputChannel(channelName);
+        workspaceState.update(channelName, channel);
+    }
+
+    return channel;
+}
+
 export function displayOutput(childProcess: ChildProcess, outputChannelName: string){			
-    const outputChannel = window.createOutputChannel(outputChannelName);
+    const outputChannel = getPersistentOutputChannel(outputChannelName);
     outputChannel.show(true);
 
     if (childProcess.stdout){

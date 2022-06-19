@@ -1,15 +1,17 @@
 import { execFile, ExecFileException } from 'child_process';
 import { existsSync } from 'fs';
 import path = require('path');
-import { commands, ExtensionContext, ProgressLocation, window } from 'vscode';
+import { commands, ExtensionContext, Memento, ProgressLocation, window } from 'vscode';
 import { dockerExec, getBuildFolder, getWorkspaceFolder, displayOutput } from './helpers';
 var copy = require('recursive-copy');
 import { SerialPort } from 'serialport'
 
 var extensionPath: string;
+export var workspaceState: Memento;
 
 export function activate(context: ExtensionContext) {
 	extensionPath = context.extensionPath;
+	workspaceState = context.workspaceState;
 
 	context.subscriptions.push(commands.registerCommand('mfsc.compileSoC', compileSoC));
 	context.subscriptions.push(commands.registerCommand('mfsc.uploadSoC', uploadSoC));
@@ -44,7 +46,7 @@ function compileSoC() {
 		"/project/build/"
 	];
 
-	return dockerExec(command, "Building SoC", "Built SoC!");
+	return dockerExec(command, "MFSC: Compile SoC", "Building SoC", "Built SoC!");
 }
 
 function compileCode(){
@@ -53,7 +55,7 @@ function compileCode(){
 		"-C", "/project/"
 	];
 
-	return dockerExec(command, "Compiling code", "Compiled!");
+	return dockerExec(command, "MFSC: Compile C Code", "Compiling code", "Compiled!");
 }
 
 function uploadSoC(){
