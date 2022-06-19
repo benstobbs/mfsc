@@ -52,8 +52,10 @@ export function dockerExec(
 
 export function getPersistentOutputChannel(channelName: string){
     var channel: (OutputChannel | undefined) = workspaceState.get(channelName);
+
+    const validChannel = channel && (channel.append !== undefined) && (channel.show !== undefined);
     
-    if (!channel){
+    if (!channel || !validChannel){
         channel = window.createOutputChannel(channelName);
         workspaceState.update(channelName, channel);
     }
