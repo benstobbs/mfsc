@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 #
-# This file is part of LiteX-Boards.
+# This file was modified from LiteX-Boards.
 #
-# Copyright (c) Greg Davill <greg.davill@gmail.com>
+# Original Copyright (c) Greg Davill <greg.davill@gmail.com>
 # SPDX-License-Identifier: BSD-2-Clause
 
 import json
